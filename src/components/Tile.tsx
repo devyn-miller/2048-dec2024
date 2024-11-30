@@ -10,20 +10,23 @@ interface TileProps {
 export function Tile({ tile, cellSize }: TileProps) {
   const { theme } = useTheme();
   const { value, position } = tile;
+  const gap = 8; // Match the gap size from Grid
   
   const style = {
     ...theme.tileColors[value],
-    transform: `translate(${position.col * cellSize}px, ${position.row * cellSize}px)`,
-    transition: 'transform 100ms ease-in-out',
+    transform: `translate(${position.col * (cellSize + gap)}px, ${position.row * (cellSize + gap)}px)`,
+    transition: 'all 100ms ease-in-out',
     position: 'absolute' as const,
     width: `${cellSize}px`,
     height: `${cellSize}px`,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: '8px',
+    borderRadius: '4px',
     fontWeight: 'bold',
-    fontSize: value <= 512 ? `${cellSize / 3}px` : `${cellSize / 3.5}px`,
+    fontSize: value <= 512 ? `${cellSize / 2.2}px` : `${cellSize / 2.8}px`,
+    color: value <= 4 ? theme.darkText : theme.lightText,
+    zIndex: 10,
   };
 
   return (

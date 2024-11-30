@@ -7,8 +7,8 @@ interface GameSettingsProps {
 }
 
 export function GameSettings({ config, onConfigChange }: GameSettingsProps) {
-  const gridSizes = [4, 5, 6, 8];
-  const winningTiles = [2048, 4096, 8192];
+  const gridSizes = [4, 5, 6, 7, 8];
+  const winningTiles = [1024, 2048, 4096, 8192];
 
   return (
     <div className="space-y-4">
@@ -44,7 +44,7 @@ export function GameSettings({ config, onConfigChange }: GameSettingsProps) {
                   : 'bg-gray-200 hover:bg-gray-300'
               }`}
             >
-              {tile}
+              {tile.toLocaleString()}
             </button>
           ))}
         </div>

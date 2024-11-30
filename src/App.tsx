@@ -6,6 +6,8 @@ import { createInitialGrid, move, addRandomTile, isGameOver, hasWon } from './ut
 import { Settings, Rotate3D, Share2, Palette } from 'lucide-react';
 import { ThemeEditor } from './components/ThemeEditor';
 import { GameSettings } from './components/GameSettings';
+import { ShareScore } from './components/ShareScore';
+import { ThemeSelector } from './components/ThemeSelector';
 
 function Game() {
   const [config, setConfig] = useState<GameConfig>({
@@ -99,81 +101,82 @@ function Game() {
             <h1 className="text-4xl font-bold text-gray-800">2048</h1>
             <p className="text-gray-600">Join the numbers and get to {config.winningTile}!</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-8">
             <button
-              onClick={() => setShowSettings(!showSettings)}
+              onClick={() => setShowSettings(true)}
               className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors"
-              title="Game Settings"
+              aria-label="Game settings"
             >
               <Settings size={24} />
             </button>
+            
+            <ThemeSelector />
+            
             <button
               onClick={() => setShowThemeEditor(true)}
               className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors"
-              title="Theme Editor"
+              aria-label="Theme editor"
             >
               <Palette size={24} />
             </button>
-            <button
-              onClick={shareGame}
-              className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors"
-              title="Share"
-            >
-              <Share2 size={24} />
-            </button>
+            
+            <ShareScore 
+              score={score}
+              bestScore={bestScore}
+              config={config}
+              gameOver={gameOver}
+              won={won}
+              grid={grid}
+            />
+          </div>
+
+          <div className="flex justify-between mb-4">
+            <div className="bg-gray-200 rounded-lg p-4">
+              <div className="text-sm text-gray-600">Score</div>
+              <div className="text-2xl font-bold">{score}</div>
+            </div>
+            <div className="bg-gray-200 rounded-lg p-4">
+              <div className="text-sm text-gray-600">Best</div>
+              <div className="text-2xl font-bold">{bestScore}</div>
+            </div>
+          </div>
+
+          {showSettings && (
+            <GameSettings
+              config={config}
+              onConfigChange={(newConfig) => {
+                setConfig(newConfig);
+                resetGame();
+              }}
+              onClose={() => setShowSettings(false)}
+            />
+          )}
+        </div>
+
+        <Grid grid={grid} />
+
+        {(gameOver || won) && (
+          <div className="mt-8 text-center">
+            <h2 className={`text-2xl font-bold mb-4 ${won ? 'text-green-500' : 'text-red-500'}`}>
+              {won ? 'You Won!' : 'Game Over!'}
+            </h2>
             <button
               onClick={resetGame}
-              className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors"
-              title="New Game"
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
-              <Rotate3D size={24} />
+              Try Again
             </button>
           </div>
-        </div>
+        )}
 
-        <div className="flex justify-between mb-4">
-          <div className="bg-gray-200 rounded-lg p-4">
-            <div className="text-sm text-gray-600">Score</div>
-            <div className="text-2xl font-bold">{score}</div>
-          </div>
-          <div className="bg-gray-200 rounded-lg p-4">
-            <div className="text-sm text-gray-600">Best</div>
-            <div className="text-2xl font-bold">{bestScore}</div>
-          </div>
-        </div>
-
-        {showSettings && (
-          <div className="mb-4 p-4 bg-white rounded-lg shadow-lg">
-            <GameSettings config={config} onConfigChange={handleConfigChange} />
+        {showThemeEditor && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <ThemeEditor onClose={() => setShowThemeEditor(false)} />
+            </div>
           </div>
         )}
       </div>
-
-      <Grid grid={grid} />
-
-      {(gameOver || won) && (
-        <div className="mt-8 text-center">
-          <h2 className={`text-2xl font-bold mb-4 ${won ? 'text-green-500' : 'text-red-500'}`}>
-            {won ? 'You Won!' : 'Game Over!'}
-          </h2>
-          <button
-            onClick={resetGame}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
-
-      {showThemeEditor && (
-        <ThemeEditor
-          onSave={(newTheme) => {
-            setTheme(newTheme);
-            setShowThemeEditor(false);
-          }}
-          onClose={() => setShowThemeEditor(false)}
-        />
-      )}
     </div>
   );
 }
