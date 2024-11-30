@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Tile as TileComponent } from './Tile';
 import { Tile } from '../types/game';
 import { useTheme } from '../contexts/ThemeContext';
@@ -9,6 +9,62 @@ interface GridProps {
 
 export function Grid({ grid }: GridProps) {
   const { theme } = useTheme();
+  const gridRef = useRef<HTMLDivElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY
+      };
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartRef.current) return;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartRef.current.x;
+      const deltaY = touch.clientY - touchStartRef.current.y;
+      const minSwipeDistance = 30; // minimum swipe distance in pixels
+
+      // Determine the primary direction of the swipe
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe
+        if (Math.abs(deltaX) >= minSwipeDistance) {
+          const event = new KeyboardEvent('keydown', {
+            key: deltaX > 0 ? 'ArrowRight' : 'ArrowLeft'
+          });
+          window.dispatchEvent(event);
+        }
+      } else {
+        // Vertical swipe
+        if (Math.abs(deltaY) >= minSwipeDistance) {
+          const event = new KeyboardEvent('keydown', {
+            key: deltaY > 0 ? 'ArrowDown' : 'ArrowUp'
+          });
+          window.dispatchEvent(event);
+        }
+      }
+
+      touchStartRef.current = null;
+    };
+
+    const gridElement = gridRef.current;
+    if (gridElement) {
+      gridElement.addEventListener('touchstart', handleTouchStart);
+      gridElement.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      if (gridElement) {
+        gridElement.removeEventListener('touchstart', handleTouchStart);
+        gridElement.removeEventListener('touchend', handleTouchEnd);
+      }
+    };
+  }, []);
+
   const size = grid.length;
   const containerSize = 400;
   const gap = 8;
@@ -19,6 +75,7 @@ export function Grid({ grid }: GridProps) {
   
   return (
     <div 
+      ref={gridRef}
       className="relative rounded-lg overflow-hidden"
       style={{ 
         backgroundColor: theme.gridBackground,

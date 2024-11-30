@@ -1,110 +1,48 @@
 import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemeEditor } from './ThemeEditor';
+import { Palette } from 'lucide-react';
 
 export function ThemeSelector() {
-  const { theme, themes, setTheme, deleteTheme, customThemeCount } = useTheme();
+  const { theme: currentTheme, themes, setTheme } = useTheme();
   const [showThemeEditor, setShowThemeEditor] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedTheme = themes.find(t => t.id === e.target.value);
+  const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTheme = themes.find(t => t.id === event.target.value);
     if (selectedTheme) {
       setTheme(selectedTheme);
     }
   };
 
-  const handleDeleteClick = (themeId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteConfirm(themeId);
-  };
-
-  const confirmDelete = (themeId: string) => {
-    deleteTheme(themeId);
-    setShowDeleteConfirm(null);
-  };
-
   return (
-    <div className="relative">
-      <div className="flex items-center gap-2">
-        <select
-          value={theme.id}
-          onChange={handleThemeChange}
-          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800"
-        >
-          {themes.map(t => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={() => setShowThemeEditor(true)}
-          disabled={customThemeCount >= 3}
-          className={`px-3 py-2 rounded-lg transition-colors ${
-            customThemeCount >= 3
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
-          }`}
-          title={customThemeCount >= 3 ? 'Delete a custom theme to create new ones' : 'Create custom theme'}
-        >
-          Create Theme
-        </button>
-      </div>
-
-      {themes.map(t => (
-        t.id.startsWith('custom-') && showDeleteConfirm === t.id && (
-          <div
-            key={`delete-${t.id}`}
-            className="absolute mt-2 p-4 bg-white border rounded-lg shadow-lg z-10 dark:bg-gray-800"
-          >
-            <p className="mb-3">Delete theme "{t.name}"?</p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                className="px-3 py-1 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => confirmDelete(t.id)}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        )
-      ))}
+    <div className="relative flex items-center gap-2">
+      <select
+        value={currentTheme.id}
+        onChange={handleThemeChange}
+        className="appearance-none px-4 py-2 pr-8 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md hover:shadow-lg cursor-pointer font-medium text-gray-700 dark:text-gray-300"
+      >
+        {themes.map(theme => (
+          <option key={theme.id} value={theme.id}>
+            {theme.name}
+          </option>
+        ))}
+      </select>
+      
+      <button
+        onClick={() => setShowThemeEditor(true)}
+        className="p-3 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md hover:shadow-lg group"
+        aria-label="Edit themes"
+      >
+        <Palette size={22} className="group-hover:scale-110 transition-transform text-gray-700 dark:text-gray-300" />
+      </button>
 
       {showThemeEditor && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:bg-gray-800">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <ThemeEditor onClose={() => setShowThemeEditor(false)} />
           </div>
         </div>
       )}
-
-      <div className="mt-2">
-        {themes.map(t => (
-          t.id.startsWith('custom-') && (
-            <div
-              key={t.id}
-              className="inline-flex items-center gap-2 mr-2 px-2 py-1 bg-gray-100 rounded text-sm dark:bg-gray-700"
-            >
-              {t.name}
-              <button
-                onClick={(e) => handleDeleteClick(t.id, e)}
-                className="text-gray-500 hover:text-red-500"
-                title="Delete theme"
-              >
-                ×
-              </button>
-            </div>
-          )
-        ))}
-      </div>
     </div>
   );
 }
