@@ -1,74 +1,110 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { ThemeEditor } from './ThemeEditor';
 
 export function ThemeSelector() {
-  const { theme, themes, setTheme } = useTheme();
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { theme, themes, setTheme, deleteTheme, customThemeCount } = useTheme();
+  const [showThemeEditor, setShowThemeEditor] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTheme = themes.find(t => t.id === e.target.value);
+    if (selectedTheme) {
+      setTheme(selectedTheme);
+    }
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const handleDeleteClick = (themeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(themeId);
+  };
+
+  const confirmDelete = (themeId: string) => {
+    deleteTheme(themeId);
+    setShowDeleteConfirm(null);
+  };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors flex items-center gap-2"
-        aria-label="Select theme"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <div className="relative">
+      <div className="flex items-center gap-2">
+        <select
+          value={theme.id}
+          onChange={handleThemeChange}
+          className="px-3 py-2 border rounded-lg bg-white dark:bg-gray-800"
         >
-          <path d="M12 2v8L22 6 12 2z"/>
-          <path d="M12 22v-8L22 18 12 22z"/>
-          <path d="M2 14l10-4L2 6v8z"/>
-          <path d="M2 18l10-4v8l-10-4z"/>
-        </svg>
-        <span className="hidden sm:inline">Theme</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50">
-          {themes.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => {
-                setTheme(t);
-                setIsOpen(false);
-              }}
-              className={`w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                t.id === theme.id ? 'bg-gray-50 font-medium' : ''
-              }`}
-            >
+          {themes.map(t => (
+            <option key={t.id} value={t.id}>
               {t.name}
-            </button>
+            </option>
           ))}
+        </select>
+
+        <button
+          onClick={() => setShowThemeEditor(true)}
+          disabled={customThemeCount >= 3}
+          className={`px-3 py-2 rounded-lg transition-colors ${
+            customThemeCount >= 3
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-500 text-white hover:bg-blue-600'
+          }`}
+          title={customThemeCount >= 3 ? 'Delete a custom theme to create new ones' : 'Create custom theme'}
+        >
+          Create Theme
+        </button>
+      </div>
+
+      {themes.map(t => (
+        t.id.startsWith('custom-') && showDeleteConfirm === t.id && (
+          <div
+            key={`delete-${t.id}`}
+            className="absolute mt-2 p-4 bg-white border rounded-lg shadow-lg z-10 dark:bg-gray-800"
+          >
+            <p className="mb-3">Delete theme "{t.name}"?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="px-3 py-1 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmDelete(t.id)}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )
+      ))}
+
+      {showThemeEditor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto dark:bg-gray-800">
+            <ThemeEditor onClose={() => setShowThemeEditor(false)} />
+          </div>
         </div>
       )}
+
+      <div className="mt-2">
+        {themes.map(t => (
+          t.id.startsWith('custom-') && (
+            <div
+              key={t.id}
+              className="inline-flex items-center gap-2 mr-2 px-2 py-1 bg-gray-100 rounded text-sm dark:bg-gray-700"
+            >
+              {t.name}
+              <button
+                onClick={(e) => handleDeleteClick(t.id, e)}
+                className="text-gray-500 hover:text-red-500"
+                title="Delete theme"
+              >
+                ×
+              </button>
+            </div>
+          )
+        ))}
+      </div>
     </div>
   );
 }

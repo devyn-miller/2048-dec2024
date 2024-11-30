@@ -23,9 +23,21 @@ function Game() {
   const [showThemeEditor, setShowThemeEditor] = useState(false);
   const { theme, themes, setTheme } = useTheme();
 
+  const resetGame = () => {
+    const newGrid = createInitialGrid(config.gridSize);
+    setGrid(newGrid);
+    setScore(0);
+    setGameOver(false);
+    setWon(false);
+  };
+
+  useEffect(() => {
+    resetGame();
+  }, [config.gridSize]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (gameOver) return;
+      if (gameOver || won) return;
 
       const directions: Record<string, Direction> = {
         ArrowUp: 'up',
@@ -59,21 +71,11 @@ function Game() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [grid, gameOver, bestScore, config.winningTile]);
-
-  const resetGame = () => {
-    setGrid(createInitialGrid(config.gridSize));
-    setScore(0);
-    setGameOver(false);
-    setWon(false);
-  };
+  }, [grid, gameOver, won, config.winningTile]);
 
   const handleConfigChange = (newConfig: GameConfig) => {
     setConfig(newConfig);
-    setGrid(createInitialGrid(newConfig.gridSize));
-    setScore(0);
-    setGameOver(false);
-    setWon(false);
+    resetGame();
   };
 
   const shareGame = () => {
@@ -95,30 +97,46 @@ function Game() {
       className="min-h-screen w-full flex flex-col items-center justify-center p-4"
       style={{ background: theme.background }}
     >
-      <div className="w-[400px] mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <div>
+      <div className="max-w-lg mx-auto p-4">
+        <div className="mb-8">
+          <div className="text-center mb-6">
             <h1 className="text-4xl font-bold text-gray-800">2048</h1>
             <p className="text-gray-600">Join the numbers and get to {config.winningTile}!</p>
           </div>
-          <div className="flex gap-2 mb-8">
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors"
-              aria-label="Game settings"
-            >
-              <Settings size={24} />
-            </button>
-            
-            <ThemeSelector />
-            
-            <button
-              onClick={() => setShowThemeEditor(true)}
-              className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors"
-              aria-label="Theme editor"
-            >
-              <Palette size={24} />
-            </button>
+
+          {/* Score display */}
+          <div className="flex justify-between mb-6">
+            <div className="bg-gray-100 rounded-lg p-4 w-36 shadow-sm">
+              <div className="text-sm text-gray-600 mb-1">Score</div>
+              <div className="text-2xl font-bold">{score.toLocaleString()}</div>
+            </div>
+            <div className="bg-gray-100 rounded-lg p-4 w-36 shadow-sm">
+              <div className="text-sm text-gray-600 mb-1">Best</div>
+              <div className="text-2xl font-bold">{bestScore.toLocaleString()}</div>
+            </div>
+          </div>
+
+          {/* Control buttons */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm"
+                aria-label="Game settings"
+              >
+                <Settings size={22} />
+              </button>
+              
+              <ThemeSelector />
+              
+              <button
+                onClick={() => setShowThemeEditor(true)}
+                className="p-3 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm"
+                aria-label="Theme editor"
+              >
+                <Palette size={22} />
+              </button>
+            </div>
             
             <ShareScore 
               score={score}
@@ -129,32 +147,11 @@ function Game() {
               grid={grid}
             />
           </div>
-
-          <div className="flex justify-between mb-4">
-            <div className="bg-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-600">Score</div>
-              <div className="text-2xl font-bold">{score}</div>
-            </div>
-            <div className="bg-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-600">Best</div>
-              <div className="text-2xl font-bold">{bestScore}</div>
-            </div>
-          </div>
-
-          {showSettings && (
-            <GameSettings
-              config={config}
-              onConfigChange={(newConfig) => {
-                setConfig(newConfig);
-                resetGame();
-              }}
-              onClose={() => setShowSettings(false)}
-            />
-          )}
         </div>
 
         <Grid grid={grid} />
 
+        {/* Game over / win overlay */}
         {(gameOver || won) && (
           <div className="mt-8 text-center">
             <h2 className={`text-2xl font-bold mb-4 ${won ? 'text-green-500' : 'text-red-500'}`}>
@@ -169,6 +166,23 @@ function Game() {
           </div>
         )}
 
+        {/* Settings modal */}
+        {showSettings && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <GameSettings
+                config={config}
+                onConfigChange={(newConfig) => {
+                  setConfig(newConfig);
+                  resetGame();
+                }}
+                onClose={() => setShowSettings(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Theme editor modal */}
         {showThemeEditor && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
