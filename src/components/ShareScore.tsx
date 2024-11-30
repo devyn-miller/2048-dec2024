@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GameConfig, Tile } from '../types/game';
-import { Info } from 'lucide-react';
+import { Info, Share2 } from 'lucide-react';
+import { Tooltip } from './Tooltip';
 
 interface ShareScoreProps {
   score: number;
@@ -43,7 +44,7 @@ ${gameStatus}
 🎯 Score: ${score.toLocaleString()}
 👑 Best: ${bestScore.toLocaleString()}
 💫 Largest Tile: ${largestTile.toLocaleString()}
-📊 Grid: ${config.gridSize}×${config.gridSize}
+📊 Grid Size: ${config.gridSize}×${config.gridSize}
 🎯 Target: ${config.winningTile.toLocaleString()}
 ━━━━━━━━━━
 🌐 Play now: ${window.location.href}`;
@@ -68,12 +69,14 @@ ${gameStatus}
       <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto dark:bg-gray-800">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Game Instructions</h2>
-          <button 
-            onClick={() => setShowInstructions(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ×
-          </button>
+          <Tooltip text="Close instructions">
+            <button 
+              onClick={() => setShowInstructions(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ×
+            </button>
+          </Tooltip>
         </div>
         <div className="space-y-4">
           <p className="font-semibold text-lg">🎯 Game Objective</p>
@@ -81,7 +84,7 @@ ${gameStatus}
           
           <p className="font-semibold text-lg mt-4">🏁 Basic Rules</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Use arrow keys (←↑→↓) or swipe to move all tiles simultaneously</li>
+            <li>Use arrow keys (←↑→↓) to move all tiles</li>
             <li>Tiles with the same number merge when they collide</li>
             <li>After each move, a new tile (2 or 4) appears in a random empty cell</li>
             <li>Game ends when no more moves are possible or you reach the {config.winningTile} tile</li>
@@ -112,38 +115,30 @@ ${gameStatus}
   );
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => setShowInstructions(true)}
-        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm"
-        aria-label="Game instructions"
-      >
-        <Info size={22} />
-      </button>
-      <button
-        onClick={handleShare}
-        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors shadow-sm"
-        aria-label="Share game score"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <>
+      <Tooltip text="Share your game score">
+        <button
+          onClick={handleShare}
+          className="p-3 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md hover:shadow-lg group"
+          aria-label="Share score"
         >
-          <circle cx="18" cy="5" r="3" />
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="19" r="3" />
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-        </svg>
-      </button>
+          <Share2 size={22} className="group-hover:scale-110 transition-transform text-gray-700 dark:text-gray-300" />
+          <span className="sr-only">Share</span>
+        </button>
+      </Tooltip>
+
+      <Tooltip text="View game instructions">
+        <button
+          onClick={() => setShowInstructions(true)}
+          className="p-3 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md hover:shadow-lg group"
+          aria-label="Game instructions"
+        >
+          <Info size={22} className="group-hover:scale-110 transition-transform text-gray-700 dark:text-gray-300" />
+          <span className="sr-only">Instructions</span>
+        </button>
+      </Tooltip>
+
       {showInstructions && <GameInstructions />}
-    </div>
+    </>
   );
 }

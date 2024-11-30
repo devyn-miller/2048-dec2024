@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { ColorPicker } from './ColorPicker';
 import { Theme } from '../types/theme';
+import { Tooltip } from './Tooltip';
 
 interface ThemeEditorProps {
   onClose: () => void;
@@ -95,13 +96,15 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-2xl font-bold">Theme Editor</h2>
-        <button
-          onClick={handleClose}
-          className="text-gray-500 hover:text-gray-700"
-          aria-label="Close theme editor"
-        >
-          ×
-        </button>
+        <Tooltip text="Close theme editor">
+          <button
+            onClick={handleClose}
+            className="text-gray-500 hover:text-gray-700"
+            aria-label="Close theme editor"
+          >
+            ×
+          </button>
+        </Tooltip>
       </div>
 
       {error && (
@@ -265,23 +268,27 @@ export function ThemeEditor({ onClose }: ThemeEditorProps) {
       </div>
 
       <div className="flex justify-end gap-4 pt-6 border-t mt-8">
-        <button
-          onClick={handleClose}
-          className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSave}
-          className={`px-6 py-2.5 text-white rounded-lg transition-colors font-medium ${
-            customThemeCount >= 3
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 shadow-sm'
-          }`}
-          disabled={customThemeCount >= 3}
-        >
-          {hasUnsavedChanges ? 'Save Changes' : 'Save Theme'}
-        </button>
+        <Tooltip text="Discard changes and close">
+          <button
+            onClick={handleClose}
+            className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            Cancel
+          </button>
+        </Tooltip>
+        <Tooltip text="Save theme changes">
+          <button
+            onClick={handleSave}
+            className={`px-6 py-2.5 text-white rounded-lg transition-colors font-medium ${
+              customThemeCount >= 3
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 shadow-sm'
+            }`}
+            disabled={customThemeCount >= 3}
+          >
+            {hasUnsavedChanges ? 'Save Changes' : 'Save Theme'}
+          </button>
+        </Tooltip>
       </div>
     </div>
   );
