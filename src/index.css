@@ -2,31 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Force light mode and improve text rendering */
+/* Prevent dark mode color changes */
 :root {
-  color-scheme: light only;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  color-scheme: light !important;
 }
 
-/* Prevent dark mode effects */
+/* Force light mode colors regardless of system settings */
 @media (prefers-color-scheme: dark) {
   html {
     background-color: #ffffff !important;
     color: #000000 !important;
   }
-  
   * {
-    background-color: inherit !important;
-    color: inherit !important;
-    border-color: initial !important;
+    color-scheme: light !important;
   }
 }
 
 html {
-  forced-color-adjust: none;
-  -webkit-forced-color-adjust: none;
+  forced-color-adjust: none !important;
+  -webkit-forced-color-adjust: none !important;
 }
 
 @keyframes fade-up {
