@@ -2,13 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Override browser color scheme */
+/* Force light mode and improve text rendering */
 :root {
-  color-scheme: light;
+  color-scheme: light only;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prevent dark mode effects */
+@media (prefers-color-scheme: dark) {
+  html {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  * {
+    background-color: inherit !important;
+    color: inherit !important;
+    border-color: initial !important;
+  }
 }
 
 html {
-  /* Prevent browser from applying its own dark mode */
   forced-color-adjust: none;
   -webkit-forced-color-adjust: none;
 }
